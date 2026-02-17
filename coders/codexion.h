@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:01:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 15:08:30 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 17:36:50 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include <pthread.h>
 
 typedef struct s_sim	t_sim;
+typedef struct s_coder	t_coder;
 
 typedef enum e_scheduler
 {
@@ -41,6 +42,20 @@ typedef struct s_config
 	t_scheduler		scheduler;
 }	t_config;
 
+typedef struct s_request
+{
+	t_coder		*coder;
+	long		arrival_time;
+	long		deadline;
+}				t_request;
+
+typedef struct s_queue
+{
+	t_request	*requests;
+	int			capacity;
+	int			size;
+}	t_queue;
+
 typedef struct s_dongle
 {
 	int					id;
@@ -48,6 +63,8 @@ typedef struct s_dongle
 	pthread_cond_t		cond;
 	long				cooldown_until;
 	int					available;
+	t_queue				queue;
+	t_scheduler			scheduler;
 }	t_dongle;
 
 typedef struct s_coder
