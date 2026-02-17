@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:01:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 17:36:50 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 20:38:31 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,10 @@
 # include <unistd.h>
 # include <pthread.h>
 
+# define Q_CAPACITY 64
+
 typedef struct s_sim	t_sim;
 typedef struct s_coder	t_coder;
-
 typedef enum e_scheduler
 {
 	FIFO,
@@ -100,5 +101,8 @@ int		init_resources(t_sim *sim, t_config *cfg);
 void	*coder_routine(void *data);
 int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
+void	acquire_dongle(t_coder *coder, t_dongle *dongle);
+void	release_dongles(t_coder *coder);
+void	get_timeout_ts(struct timespec *ts, long timeout_ms);
 
 #endif

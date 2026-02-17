@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:43:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 15:26:42 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 19:19:36 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,10 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].id = i;
 		sim->dongles[i].available = 1;
 		sim->dongles[i].cooldown_until = 0;
+		sim->dongles[i].queue.capacity = Q_CAPACITY;
+		sim->dongles[i].queue.requests = malloc(Q_CAPACITY * sizeof(t_request));
+		sim->dongles[i].queue.size = 0;
+		sim->dongles[i].scheduler = cfg->scheduler;
 		pthread_mutex_init(&sim->dongles[i].mutex, NULL);
 		pthread_cond_init(&sim->dongles[i].cond, NULL);
 	}

@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:34:42 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 14:16:33 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 20:38:17 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,4 +23,18 @@ long	get_timestamp_ms(void)
 void	msleep(long ms)
 {
 	usleep(ms * 1000);
+}
+
+void	get_timeout_ts(struct timespec *ts, long timeout_ms)
+{
+	struct timeval	tv;
+
+	gettimeofday(&tv, NULL);
+	ts->tv_sec = tv.tv_sec + (timeout_ms / 1000);
+	ts->tv_nsec = (tv.tv_usec * 1000) + ((timeout_ms % 1000) * 1000000);
+	if (ts->tv_nsec >= 1000000000)
+	{
+		ts->tv_sec++;
+		ts->tv_nsec -= 1000000000;
+	}
 }
