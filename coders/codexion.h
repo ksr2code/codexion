@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:01:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 20:38:31 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 22:03:53 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,15 +70,17 @@ typedef struct s_dongle
 
 typedef struct s_coder
 {
-	int			id;
-	pthread_t	thread;
-	t_dongle	*left_dongle;
-	t_dongle	*right_dongle;
-	long		last_compile_start;
-	int			compiles_done;
-	int			alive;
-	t_config	*cfg;
-	t_sim		*sim;
+	int				id;
+	pthread_t		thread;
+	t_dongle		*left_dongle;
+	t_dongle		*right_dongle;
+	long			last_compile_start;
+	int				compiles_done;
+	int				alive;
+	t_config		*cfg;
+	t_sim			*sim;
+	long			last_activity_time;
+	pthread_mutex_t	activity_mutex;
 }	t_coder;
 
 typedef struct s_sim
@@ -88,11 +90,13 @@ typedef struct s_sim
 	t_coder				*coders;
 	t_dongle			*dongles;
 	int					num_coders;
+	int					burnout_detected;
+	pthread_t			monitor_thread;
 }	t_sim;
 
 int		parse_args(int ac, char **av, t_config *cfg);
 long	get_timestamp_ms(void);
-void	msleep(long ms);
+void	msleep(t_sim *sim, long ms);
 void	log_state(t_sim *sim, int coder_id, const char *action);
 void	log_burnout(t_sim *sim, int coder_id);
 t_sim	*init_simulation(t_config *cfg);
@@ -101,8 +105,10 @@ int		init_resources(t_sim *sim, t_config *cfg);
 void	*coder_routine(void *data);
 int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
+void	acquire_lower_first(t_coder *coder);
 void	acquire_dongle(t_coder *coder, t_dongle *dongle);
 void	release_dongles(t_coder *coder);
 void	get_timeout_ts(struct timespec *ts, long timeout_ms);
+void	*monitor_routine(void *data);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:34:42 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 20:38:17 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 22:07:21 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,21 @@ long	get_timestamp_ms(void)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-void	msleep(long ms)
+void	msleep(t_sim *sim, long ms)
 {
-	usleep(ms * 1000);
+	long	start;
+	long	elapsed;
+
+	start = get_timestamp_ms();
+	while (1)
+	{
+		if (sim && sim->burnout_detected)
+			return ;
+		elapsed = get_timestamp_ms() - start;
+		if (elapsed >= ms)
+			break ;
+		usleep(1000);
+	}
 }
 
 void	get_timeout_ts(struct timespec *ts, long timeout_ms)

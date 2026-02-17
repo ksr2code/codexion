@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:43:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 19:19:36 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 21:31:51 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ t_sim	*init_simulation(t_config *cfg)
 	if (!sim)
 		return (NULL);
 	sim->start_time = get_timestamp_ms();
+	sim->burnout_detected = 0;
 	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
 	{
 		free(sim);
