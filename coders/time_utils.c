@@ -1,29 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   time_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/17 10:00:52 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 14:01:51 by ksmailov         ###   ########.fr       */
+/*   Created: 2026/02/17 13:34:42 by ksmailov          #+#    #+#             */
+/*   Updated: 2026/02/17 14:16:33 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	main(int argc, char **argv)
+long	get_timestamp_ms(void)
 {
-	t_config	cfg;
-	t_sim		*sim;
+	struct timeval	tv;
 
-	if (!parse_args(argc, argv, &cfg))
-		return (1);
-	sim = init_simulation(&cfg);
-	log_state(sim, 1, "is compiling");
-	msleep(500);
-	log_state(sim, 2, "has taken a dongle");
-	destroy_simulation(sim);
-	return (0);
-	return (0);
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
+void	msleep(long ms)
+{
+	usleep(ms * 1000);
 }

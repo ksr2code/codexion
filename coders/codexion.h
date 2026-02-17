@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:01:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 11:22:46 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 14:30:24 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,11 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
+# include <sys/time.h>
+# include <unistd.h>
+# include <pthread.h>
+
+typedef struct s_sim	t_sim;
 
 typedef enum e_scheduler
 {
@@ -36,7 +41,43 @@ typedef struct s_config
 	t_scheduler		scheduler;
 }	t_config;
 
+typedef struct s_dongle
+{
+	int					id;
+	pthread_mutex_t		mutex;
+	pthread_cond_t		cond;
+	long				cooldown_until;
+	int					available;
+}	t_dongle;
 
-int	parse_args(int ac, char **av, t_config *cfg);
+typedef struct s_coder
+{
+	int			id;
+	pthread_t	thread;
+	t_dongle	*left_dongle;
+	t_dongle	*right_dongle;
+	long		last_compile_start;
+	int			compiles_done;
+	int			alive;
+	t_config	*cfg;
+	t_sim		*sim;
+}	t_coder;
 
-#endif // !CODEXION_H
+typedef struct s_sim
+{
+	pthread_mutex_t		log_mutex;
+	long				start_time;
+	t_coder				*coders;
+	t_dongle			*dongles;
+	int					num_coders;
+}	t_sim;
+
+int		parse_args(int ac, char **av, t_config *cfg);
+long	get_timestamp_ms(void);
+void	msleep(long ms);
+void	log_state(t_sim *sim, int coder_id, const char *action);
+void	log_burnout(t_sim *sim, int coder_id);
+t_sim	*init_simulation(t_config *cfg);
+void	destroy_simulation(t_sim *sim);
+
+#endif

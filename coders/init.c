@@ -1,29 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/17 10:00:52 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 14:01:51 by ksmailov         ###   ########.fr       */
+/*   Created: 2026/02/17 13:43:05 by ksmailov          #+#    #+#             */
+/*   Updated: 2026/02/17 14:11:10 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	main(int argc, char **argv)
+t_sim	*init_simulation(t_config *cfg)
 {
-	t_config	cfg;
-	t_sim		*sim;
+	t_sim	*sim;
 
-	if (!parse_args(argc, argv, &cfg))
-		return (1);
-	sim = init_simulation(&cfg);
-	log_state(sim, 1, "is compiling");
-	msleep(500);
-	log_state(sim, 2, "has taken a dongle");
-	destroy_simulation(sim);
-	return (0);
-	return (0);
+	sim = malloc(sizeof(t_sim));
+	if (!sim)
+		return (NULL);
+	sim->start_time = get_timestamp_ms();
+	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
+	{
+		free(sim);
+		return (NULL);
+	}
+	return (sim);
+}
+
+void	destroy_simulation(t_sim *sim)
+{
+	pthread_mutex_destroy(&sim->log_mutex);
+	free(sim);
 }
