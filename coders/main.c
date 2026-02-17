@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:00:52 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 14:01:51 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 15:22:52 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,10 @@ int	main(int argc, char **argv)
 	if (!parse_args(argc, argv, &cfg))
 		return (1);
 	sim = init_simulation(&cfg);
-	log_state(sim, 1, "is compiling");
-	msleep(500);
-	log_state(sim, 2, "has taken a dongle");
+	if (!sim)
+		return (1);
+	create_coders(sim);
+	wait_coders(sim);
 	destroy_simulation(sim);
-	return (0);
 	return (0);
 }

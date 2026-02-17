@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:43:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 14:49:19 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/17 15:26:42 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ t_sim	*init_simulation(t_config *cfg)
 	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
 	{
 		free(sim);
+		return (NULL);
+	}
+	if (!init_resources(sim, cfg))
+	{
+		destroy_simulation(sim);
 		return (NULL);
 	}
 	return (sim);
