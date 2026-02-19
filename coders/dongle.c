@@ -19,15 +19,26 @@ static int	dongle_available(t_dongle *dongle)
 
 static void	queue_request(t_dongle *dongle, t_coder *coder)
 {
+	int			i;
 	t_request	req;
 
 	req.coder = coder;
 	req.arrival_time = get_timestamp_ms();
-	dongle->queue.requests[dongle->queue.size] = req;
+	if (dongle->scheduler == EDF)
+		req.deadline = coder->last_compile_start + coder->cfg->time_to_burnout;
+	else
+		req.deadline = req.arrival_time;
+	i = dongle->queue.size;
+	while (i > 0 && dongle->queue.requests[i - 1].deadline > req.deadline)
+	{
+		dongle->queue.requests[i] = dongle->queue.requests[i - 1];
+		i--;
+	}
+	dongle->queue.requests[i] = req;
 	dongle->queue.size++;
 }
 
-static t_coder	*dequeue_fifo(t_dongle *dongle)
+static t_coder	*dequeue(t_dongle *dongle)
 {
 	t_coder	*winner;
 	int		i;
@@ -54,7 +65,7 @@ void	acquire_dongle(t_coder *coder, t_dongle *dongle)
 			&& dongle->queue.size > 0
 			&& dongle->queue.requests[0].coder == coder)
 		{
-			dequeue_fifo(dongle);
+			dequeue(dongle);
 			dongle->available = 0;
 			break ;
 		}
