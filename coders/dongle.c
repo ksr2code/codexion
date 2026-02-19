@@ -48,7 +48,7 @@ void	acquire_dongle(t_coder *coder, t_dongle *dongle)
 
 	pthread_mutex_lock(&dongle->mutex);
 	queue_request(dongle, coder);
-	while (1)
+	while (!coder->sim->burnout_detected)
 	{
 		if (dongle->available && dongle_available(dongle)
 			&& dongle->queue.size > 0
@@ -62,7 +62,8 @@ void	acquire_dongle(t_coder *coder, t_dongle *dongle)
 		pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &ts);
 	}
 	pthread_mutex_unlock(&dongle->mutex);
-	log_state(coder->sim, coder->id, "has taken a dongle");
+	if (!coder->sim->burnout_detected)
+		log_state(coder->sim, coder->id, "has taken a dongle");
 }
 
 void	release_dongles(t_coder *coder)
