@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/22 13:32:39 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/22 13:40:30 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/22 15:59:59 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static void	swap_requests(t_request *r1, t_request *r2)
 	*r2 = tmp;
 }
 
-static void	sift_up(t_queue *q, int i)
+static void	shift_up(t_queue *q, int i)
 {
 	int	parent;
 
@@ -35,7 +35,7 @@ static void	sift_up(t_queue *q, int i)
 	}
 }
 
-static void	sift_down(t_queue *q, int i)
+static void	shift_down(t_queue *q, int i)
 {
 	int	left;
 	int	right;
@@ -47,15 +47,11 @@ static void	sift_down(t_queue *q, int i)
 		right = (2 * i) + 2;
 		smallest = i;
 		if (left < q->size)
-		{
 			if (q->requests[left].deadline < q->requests[smallest].deadline)
 				smallest = left;
-		}
 		if (right < q->size)
-		{
 			if (q->requests[right].deadline < q->requests[smallest].deadline)
 				smallest = right;
-		}
 		if (smallest == i)
 			break ;
 		swap_requests(&q->requests[i], &q->requests[smallest]);
@@ -77,7 +73,7 @@ void	heap_insert(t_dongle *dongle, t_coder *coder)
 	i = dongle->queue.size;
 	dongle->queue.requests[i] = req;
 	dongle->queue.size++;
-	sift_up(&dongle->queue, i);
+	shift_up(&dongle->queue, i);
 }
 
 t_coder	*heap_remove(t_dongle *dongle)
@@ -93,7 +89,7 @@ t_coder	*heap_remove(t_dongle *dongle)
 	if (dongle->queue.size > 0)
 	{
 		dongle->queue.requests[0] = dongle->queue.requests[dongle->queue.size];
-		sift_down(&dongle->queue, 0);
+		shift_down(&dongle->queue, 0);
 	}
 	return (winner);
 }

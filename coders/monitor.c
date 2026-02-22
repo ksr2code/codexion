@@ -31,7 +31,9 @@ static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 
 	if (!coder->alive)
 		return (0);
+	pthread_mutex_lock(&coder->compile_mutex);
 	elapsed = get_timestamp_ms() - coder->last_compile_start;
+	pthread_mutex_unlock(&coder->compile_mutex);
 	if (elapsed > coder->cfg->time_to_burnout)
 	{
 		log_burnout(sim, coder->id);
@@ -50,7 +52,7 @@ void	*monitor_routine(void *data)
 	sim = (t_sim *)data;
 	while (!sim->burnout_detected)
 	{
-		usleep(10000);
+		usleep(1000);
 		i = -1;
 		while (++i < sim->num_coders)
 		{

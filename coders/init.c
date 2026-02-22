@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:43:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 21:31:51 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/22 16:21:37 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,23 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 	return (1);
 }
 
+static int	init_coder_mutexes(t_sim *sim, int count)
+{
+	int	i;
+
+	i = -1;
+	while (++i < count)
+	{
+		if (pthread_mutex_init(&sim->coders[i].compile_mutex, NULL) != 0)
+		{
+			while (--i >= 0)
+				pthread_mutex_destroy(&sim->coders[i].compile_mutex);
+			return (0);
+		}
+	}
+	return (1);
+}
+
 static int	init_coders(t_sim *sim, t_config *cfg)
 {
 	int	i;
@@ -76,6 +93,12 @@ static int	init_coders(t_sim *sim, t_config *cfg)
 		sim->coders[i].compiles_done = 0;
 		sim->coders[i].last_compile_start = sim->start_time;
 		sim->coders[i].alive = 1;
+	}
+	if (!init_coder_mutexes(sim, cfg->number_of_coders))
+	{
+		free(sim->coders);
+		sim->coders = NULL;
+		return (0);
 	}
 	return (1);
 }

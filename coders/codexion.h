@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:01:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/22 13:48:49 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/22 16:18:02 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,7 @@ typedef struct s_coder
 	int				alive;
 	t_config		*cfg;
 	t_sim			*sim;
-	long			last_activity_time;
-	pthread_mutex_t	activity_mutex;
+	pthread_mutex_t	compile_mutex;
 }	t_coder;
 
 typedef struct s_sim
