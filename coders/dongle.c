@@ -12,9 +12,10 @@
 
 #include "codexion.h"
 
-static int	dongle_available(t_dongle *dongle)
+static int	dongle_available(t_dongle *dongle, t_coder *coder)
 {
-	return (get_timestamp_ms() >= dongle->cooldown_until);
+	return (dongle->available && get_timestamp_ms() >= dongle->cooldown_until
+		&& dongle->queue.size > 0 && dongle->queue.requests[0].coder == coder);
 }
 
 void	acquire_dongle(t_coder *coder, t_dongle *dongle)
@@ -25,9 +26,7 @@ void	acquire_dongle(t_coder *coder, t_dongle *dongle)
 	heap_insert(dongle, coder);
 	while (!coder->sim->burnout_detected)
 	{
-		if (dongle->available && dongle_available(dongle)
-			&& dongle->queue.size > 0
-			&& dongle->queue.requests[0].coder == coder)
+		if (dongle_available(dongle, coder))
 		{
 			heap_remove(dongle);
 			dongle->available = 0;
