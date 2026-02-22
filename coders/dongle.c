@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 17:43:40 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 21:52:26 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/22 13:53:04 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,55 +17,19 @@ static int	dongle_available(t_dongle *dongle)
 	return (get_timestamp_ms() >= dongle->cooldown_until);
 }
 
-static void	queue_request(t_dongle *dongle, t_coder *coder)
-{
-	int			i;
-	t_request	req;
-
-	req.coder = coder;
-	req.arrival_time = get_timestamp_ms();
-	if (dongle->scheduler == EDF)
-		req.deadline = coder->last_compile_start + coder->cfg->time_to_burnout;
-	else
-		req.deadline = req.arrival_time;
-	i = dongle->queue.size;
-	while (i > 0 && dongle->queue.requests[i - 1].deadline > req.deadline)
-	{
-		dongle->queue.requests[i] = dongle->queue.requests[i - 1];
-		i--;
-	}
-	dongle->queue.requests[i] = req;
-	dongle->queue.size++;
-}
-
-static t_coder	*dequeue(t_dongle *dongle)
-{
-	t_coder	*winner;
-	int		i;
-
-	if (dongle->queue.size == 0)
-		return (NULL);
-	winner = dongle->queue.requests[0].coder;
-	i = 0;
-	while (++i < dongle->queue.size)
-		dongle->queue.requests[i - 1] = dongle->queue.requests[i];
-	dongle->queue.size--;
-	return (winner);
-}
-
 void	acquire_dongle(t_coder *coder, t_dongle *dongle)
 {
 	struct timespec	ts;
 
 	pthread_mutex_lock(&dongle->mutex);
-	queue_request(dongle, coder);
+	heap_insert(dongle, coder);
 	while (!coder->sim->burnout_detected)
 	{
 		if (dongle->available && dongle_available(dongle)
 			&& dongle->queue.size > 0
 			&& dongle->queue.requests[0].coder == coder)
 		{
-			dequeue(dongle);
+			heap_remove(dongle);
 			dongle->available = 0;
 			break ;
 		}

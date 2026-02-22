@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 10:01:05 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 22:03:53 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/02/22 13:48:49 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,5 +110,7 @@ void	acquire_dongle(t_coder *coder, t_dongle *dongle);
 void	release_dongles(t_coder *coder);
 void	get_timeout_ts(struct timespec *ts, long timeout_ms);
 void	*monitor_routine(void *data);
+void	heap_insert(t_dongle *dongle, t_coder *coder);
+t_coder	*heap_remove(t_dongle *dongle);
 
 #endif
