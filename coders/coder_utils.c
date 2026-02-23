@@ -1,55 +1,66 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   coder_utils.c                                      :+:      :+:    :+:   */
+/*   coder.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/17 21:50:09 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 21:50:50 by ksmailov         ###   ########.fr       */
+/*   Created: 2026/02/17 15:02:23 by ksmailov          #+#    #+#             */
+/*   Updated: 2026/02/17 22:11:12 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	create_coders(t_sim *sim)
+static int	should_stop(t_coder *coder)
 {
-	int	i;
-
-	i = -1;
-	while (++i < sim->num_coders)
-	{
-		if (pthread_create(&sim->coders[i].thread, NULL, coder_routine,
-				&sim->coders[i]) != 0)
-			return (0);
-	}
-	return (1);
+	return (coder->sim->burnout_detected
+		|| coder->compiles_done >= coder->cfg->number_of_compiles_required);
 }
 
-void	wait_coders(t_sim *sim)
+static void	do_compile_phase(t_coder *coder)
 {
-	int	i;
-
-	i = -1;
-	while (++i < sim->num_coders)
-		pthread_join(sim->coders[i].thread, NULL);
+	pthread_mutex_lock(&coder->compile_mutex);
+	coder->last_compile_start = get_timestamp_ms();
+	pthread_mutex_unlock(&coder->compile_mutex);
+	coder->compiles_done++;
+	log_state(coder->sim, coder->id, "is compiling");
+	msleep(coder->sim, coder->cfg->time_to_compile);
 }
 
-void	acquire_lower_first(t_coder *coder)
+static void	do_debug_phase(t_coder *coder)
 {
-	t_dongle	*first;
-	t_dongle	*second;
+	log_state(coder->sim, coder->id, "is debugging");
+	msleep(coder->sim, coder->cfg->time_to_debug);
+}
 
-	if (coder->left_dongle->id < coder->right_dongle->id)
+static void	do_refactor_phase(t_coder *coder)
+{
+	log_state(coder->sim, coder->id, "is refactoring");
+	msleep(coder->sim, coder->cfg->time_to_refactor);
+}
+
+void	*coder_routine(void *data)
+{
+	t_coder	*coder;
+
+	coder = (t_coder *)data;
+	while (!should_stop(coder))
 	{
-		first = coder->left_dongle;
-		second = coder->right_dongle;
+		acquire_lower_first(coder);
+		if (coder->sim->burnout_detected)
+			break ;
+		do_compile_phase(coder);
+		if (coder->sim->burnout_detected)
+			break ;
+		do_debug_phase(coder);
+		if (coder->sim->burnout_detected)
+			break ;
+		do_refactor_phase(coder);
+		if (coder->sim->burnout_detected)
+			break ;
+		release_dongles(coder);
 	}
-	else
-	{
-		first = coder->right_dongle;
-		second = coder->left_dongle;
-	}
-	acquire_dongle(coder, first);
-	acquire_dongle(coder, second);
+	coder->alive = 0;
+	return (NULL);
 }
