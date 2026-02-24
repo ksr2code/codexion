@@ -49,6 +49,8 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].cooldown_until = 0;
 		sim->dongles[i].queue.capacity = Q_CAPACITY;
 		sim->dongles[i].queue.requests = malloc(Q_CAPACITY * sizeof(t_request));
+		if (!sim->dongles[i].queue.requests)
+			return (0);
 		sim->dongles[i].queue.size = 0;
 		sim->dongles[i].scheduler = cfg->scheduler;
 		pthread_mutex_init(&sim->dongles[i].mutex, NULL);

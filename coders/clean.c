@@ -38,11 +38,10 @@ static void	destroy_coders(t_sim *sim)
 
 void	destroy_simulation(t_sim *sim)
 {
-	if (sim->coders)
-	{
+	if (sim->dongles)
 		destroy_dongles(sim);
+	if (sim->coders)
 		destroy_coders(sim);
-	}
 	pthread_mutex_destroy(&sim->log_mutex);
 	free(sim);
 }
