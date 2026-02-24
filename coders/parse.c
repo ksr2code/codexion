@@ -38,7 +38,7 @@ static int	validate_args(int ac, char **av)
 			if (num > INT_MAX)
 				return (0);
 		}
-		if (num <= 0)
+		if (num < 0)
 			return (0);
 	}
 	if (strcmp(av[8], "fifo") && strcmp(av[8], "edf"))
