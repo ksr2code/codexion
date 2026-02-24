@@ -21,16 +21,14 @@ int	main(int ac, char **av)
 		return (1);
 	sim = init_simulation(&cfg);
 	if (!sim)
-		return (1);
-	if (!create_coders(sim))
+		return (2);
+	if (!create_coders(sim) || !create_monitor(sim))
 	{
 		destroy_simulation(sim);
-		return (1);
+		return (3);
 	}
-	pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim);
 	wait_coders(sim);
-	sim->burnout_detected = 1;
-	pthread_join(sim->monitor_thread, NULL);
+	wait_monitor(sim);
 	destroy_simulation(sim);
 	return (0);
 }

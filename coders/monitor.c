@@ -62,3 +62,20 @@ void	*monitor_routine(void *data)
 	}
 	return (NULL);
 }
+
+int	create_monitor(t_sim *sim)
+{
+	if (pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim) != 0)
+	{
+		sim->burnout_detected = 1;
+		wait_coders(sim);
+		return (0);
+	}
+	return (1);
+}
+
+void	wait_monitor(t_sim *sim)
+{
+	sim->burnout_detected = 1;
+	pthread_join(sim->monitor_thread, NULL);
+}
