@@ -52,7 +52,6 @@ typedef struct s_request
 typedef struct s_queue
 {
 	t_request	*requests;
-	int			capacity;
 	int			size;
 }	t_queue;
 

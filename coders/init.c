@@ -19,6 +19,7 @@ t_sim	*init_simulation(t_config *cfg)
 	sim = malloc(sizeof(t_sim));
 	if (!sim)
 		return (NULL);
+	memset(sim, 0, sizeof(t_sim));
 	sim->start_time = get_timestamp_ms();
 	sim->burnout_detected = 0;
 	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
@@ -37,43 +38,25 @@ t_sim	*init_simulation(t_config *cfg)
 static int	init_dongles(t_sim *sim, t_config *cfg)
 {
 	int	i;
-	int	q_capacity;
 
-	q_capacity = cfg->number_of_coders;
 	sim->dongles = malloc(cfg->number_of_coders * sizeof(t_dongle));
 	if (!sim->dongles)
 		return (0);
+	memset(sim->dongles, 0, cfg->number_of_coders * sizeof(t_dongle));
 	i = -1;
 	while (++i < cfg->number_of_coders)
 	{
 		sim->dongles[i].id = i;
 		sim->dongles[i].available = 1;
 		sim->dongles[i].cooldown_until = 0;
-		sim->dongles[i].queue.capacity = q_capacity;
-		sim->dongles[i].queue.requests = malloc(q_capacity * sizeof(t_request));
+		sim->dongles[i].queue.requests = malloc(2 * sizeof(t_request));
 		if (!sim->dongles[i].queue.requests)
 			return (0);
 		sim->dongles[i].queue.size = 0;
 		sim->dongles[i].scheduler = cfg->scheduler;
-		pthread_mutex_init(&sim->dongles[i].mutex, NULL);
-		pthread_cond_init(&sim->dongles[i].cond, NULL);
-	}
-	return (1);
-}
-
-static int	init_coder_mutexes(t_sim *sim, int count)
-{
-	int	i;
-
-	i = -1;
-	while (++i < count)
-	{
-		if (pthread_mutex_init(&sim->coders[i].compile_mutex, NULL) != 0)
-		{
-			while (--i >= 0)
-				pthread_mutex_destroy(&sim->coders[i].compile_mutex);
+		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0
+			|| pthread_cond_init(&sim->dongles[i].cond, NULL) != 0)
 			return (0);
-		}
 	}
 	return (1);
 }
@@ -85,6 +68,7 @@ static int	init_coders(t_sim *sim, t_config *cfg)
 	sim->coders = malloc(cfg->number_of_coders * sizeof(t_coder));
 	if (!sim->coders)
 		return (0);
+	memset(sim->coders, 0, cfg->number_of_coders * sizeof(t_coder));
 	i = -1;
 	while (++i < cfg->number_of_coders)
 	{
@@ -97,12 +81,8 @@ static int	init_coders(t_sim *sim, t_config *cfg)
 		sim->coders[i].compiles_done = 0;
 		sim->coders[i].last_compile_start = sim->start_time;
 		sim->coders[i].alive = 1;
-	}
-	if (!init_coder_mutexes(sim, cfg->number_of_coders))
-	{
-		free(sim->coders);
-		sim->coders = NULL;
-		return (0);
+		if (pthread_mutex_init(&sim->coders[i].compile_mutex, NULL) != 0)
+			return (0);
 	}
 	return (1);
 }
