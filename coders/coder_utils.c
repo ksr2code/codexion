@@ -53,13 +53,13 @@ void	*coder_routine(void *data)
 		do_compile_phase(coder);
 		if (coder->sim->burnout_detected)
 			break ;
+		release_dongles(coder);
 		do_debug_phase(coder);
 		if (coder->sim->burnout_detected)
 			break ;
 		do_refactor_phase(coder);
 		if (coder->sim->burnout_detected)
 			break ;
-		release_dongles(coder);
 	}
 	coder->alive = 0;
 	return (NULL);
