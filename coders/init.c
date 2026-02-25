@@ -37,7 +37,9 @@ t_sim	*init_simulation(t_config *cfg)
 static int	init_dongles(t_sim *sim, t_config *cfg)
 {
 	int	i;
+	int	q_capacity;
 
+	q_capacity = cfg->number_of_coders;
 	sim->dongles = malloc(cfg->number_of_coders * sizeof(t_dongle));
 	if (!sim->dongles)
 		return (0);
@@ -47,8 +49,8 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].id = i;
 		sim->dongles[i].available = 1;
 		sim->dongles[i].cooldown_until = 0;
-		sim->dongles[i].queue.capacity = Q_CAPACITY;
-		sim->dongles[i].queue.requests = malloc(Q_CAPACITY * sizeof(t_request));
+		sim->dongles[i].queue.capacity = q_capacity;
+		sim->dongles[i].queue.requests = malloc(q_capacity * sizeof(t_request));
 		if (!sim->dongles[i].queue.requests)
 			return (0);
 		sim->dongles[i].queue.size = 0;

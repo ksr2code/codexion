@@ -21,10 +21,9 @@
 # include <unistd.h>
 # include <pthread.h>
 
-# define Q_CAPACITY 64
-
 typedef struct s_sim	t_sim;
 typedef struct s_coder	t_coder;
+
 typedef enum e_scheduler
 {
 	FIFO,

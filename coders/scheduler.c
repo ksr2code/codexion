@@ -81,9 +81,7 @@ t_coder	*heap_remove(t_dongle *dongle)
 	t_coder	*winner;
 
 	if (dongle->queue.size == 0)
-	{
 		return (NULL);
-	}
 	winner = dongle->queue.requests[0].coder;
 	dongle->queue.size--;
 	if (dongle->queue.size > 0)
