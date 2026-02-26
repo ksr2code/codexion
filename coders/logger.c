@@ -19,7 +19,6 @@ void	log_state(t_sim *sim, int coder_id, const char *action)
 	timestamp = get_timestamp_ms() - sim->start_time;
 	pthread_mutex_lock(&sim->log_mutex);
 	printf("%ld %d %s\n", timestamp, coder_id, action);
-	fflush(stdout);
 	pthread_mutex_unlock(&sim->log_mutex);
 }
 
@@ -30,6 +29,5 @@ void	log_burnout(t_sim *sim, int coder_id)
 	timestamp = get_timestamp_ms() - sim->start_time;
 	pthread_mutex_lock(&sim->log_mutex);
 	printf("%ld %d burned out\n", timestamp, coder_id);
-	fflush(stdout);
 	pthread_mutex_unlock(&sim->log_mutex);
 }
