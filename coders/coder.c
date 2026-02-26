@@ -47,4 +47,6 @@ void	get_ordered(t_coder *coder, t_dongle **first, t_dongle **second)
 		*first = coder->right_dongle;
 		*second = coder->left_dongle;
 	}
+	if (*first == *second)
+		msleep(coder->sim, coder->cfg->time_to_burnout + 1);
 }
