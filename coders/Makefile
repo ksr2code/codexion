@@ -1,6 +1,6 @@
 NAME = codexion
 
-SRC_DIR = coders
+SRC_DIR = ./
 SRC = $(SRC_DIR)/main.c \
        $(SRC_DIR)/clean.c \
        $(SRC_DIR)/coder.c \
