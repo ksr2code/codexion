@@ -47,8 +47,8 @@ void	acquire_both_dongles(t_coder *coder)
 	struct timespec	ts;
 
 	get_ordered(coder, &first, &second);
-	add_to_queue(coder, first, second);
 	pthread_mutex_lock(&coder->sim->pair_mutex);
+	add_to_queue(coder, first, second);
 	while (!coder->sim->burnout)
 	{
 		if (dongle_available(first, coder) && dongle_available(second, coder))
