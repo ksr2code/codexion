@@ -59,7 +59,6 @@ typedef struct s_dongle
 {
 	int					id;
 	pthread_mutex_t		mutex;
-	pthread_cond_t		cond;
 	long				cooldown_until;
 	int					available;
 	t_queue				queue;

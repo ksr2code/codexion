@@ -24,8 +24,8 @@ t_sim	*init_simulation(t_config *cfg)
 	sim->burnout_detected = 0;
 	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0
 		|| pthread_mutex_init(&sim->pair_mutex, NULL) != 0
-		|| pthread_cond_init(&sim->pair_cond, NULL) != 0
-		|| !init_resources(sim, cfg))
+		|| pthread_cond_init(&sim->pair_cond, NULL) != 0 || !init_resources(sim,
+			cfg))
 	{
 		destroy_simulation(sim);
 		return (NULL);
@@ -52,8 +52,7 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 			return (0);
 		sim->dongles[i].queue.size = 0;
 		sim->dongles[i].scheduler = cfg->scheduler;
-		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0
-			|| pthread_cond_init(&sim->dongles[i].cond, NULL) != 0)
+		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
 			return (0);
 	}
 	return (1);

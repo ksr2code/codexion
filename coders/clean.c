@@ -21,7 +21,6 @@ static void	destroy_dongles(t_sim *sim)
 	{
 		free(sim->dongles[i].queue.requests);
 		pthread_mutex_destroy(&sim->dongles[i].mutex);
-		pthread_cond_destroy(&sim->dongles[i].cond);
 	}
 	free(sim->dongles);
 }

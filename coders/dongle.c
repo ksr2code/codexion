@@ -28,7 +28,7 @@ static void	add_to_queue(t_coder *coder, t_dongle *first, t_dongle *second)
 	pthread_mutex_unlock(&second->mutex);
 }
 
-static void	get_dongles(t_coder *coder, t_dongle *first, t_dongle *second)
+static void	get_dongles(t_dongle *first, t_dongle *second)
 {
 	pthread_mutex_lock(&first->mutex);
 	heap_remove(first);
@@ -38,12 +38,6 @@ static void	get_dongles(t_coder *coder, t_dongle *first, t_dongle *second)
 	heap_remove(second);
 	second->available = 0;
 	pthread_mutex_unlock(&second->mutex);
-	pthread_mutex_unlock(&coder->sim->pair_mutex);
-	if (!coder->sim->burnout_detected)
-	{
-		log_state(coder->sim, coder->id, "has taken a dongle");
-		log_state(coder->sim, coder->id, "has taken a dongle");
-	}
 }
 
 void	acquire_both_dongles(t_coder *coder)
@@ -59,7 +53,13 @@ void	acquire_both_dongles(t_coder *coder)
 	{
 		if (dongle_available(first, coder) && dongle_available(second, coder))
 		{
-			get_dongles(coder, first, second);
+			get_dongles(first, second);
+			if (!coder->sim->burnout_detected)
+			{
+				log_state(coder->sim, coder->id, "has taken a dongle");
+				log_state(coder->sim, coder->id, "has taken a dongle");
+			}
+			pthread_mutex_unlock(&coder->sim->pair_mutex);
 			return ;
 		}
 		get_timeout_ts(&ts, 10);
