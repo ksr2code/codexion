@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "codexion.h"
+#include <pthread.h>
 
 long	get_timestamp_ms(void)
 {
@@ -24,16 +25,20 @@ void	msleep(t_sim *sim, long ms)
 {
 	long	start;
 	long	elapsed;
+	int		burnout;
 
 	start = get_timestamp_ms();
-	while (1)
+	burnout = 0;
+	while (!burnout)
 	{
-		if (sim && sim->burnout_detected)
-			return ;
+		pthread_mutex_lock(&sim->pair_mutex);
+		burnout = sim->burnout_detected;
+		pthread_mutex_unlock(&sim->pair_mutex);
 		elapsed = get_timestamp_ms() - start;
 		if (elapsed >= ms)
 			break ;
-		usleep(1000);
+		if (!burnout)
+			usleep(1000);
 	}
 }
 

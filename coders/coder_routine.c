@@ -14,8 +14,14 @@
 
 static int	should_stop(t_coder *coder)
 {
-	return (coder->sim->burnout_detected
-		|| coder->compiles_done >= coder->cfg->number_of_compiles_required);
+	int	burnout;
+	int	finished;
+
+	pthread_mutex_lock(&coder->sim->pair_mutex);
+	burnout = coder->sim->burnout_detected;
+	pthread_mutex_unlock(&coder->sim->pair_mutex);
+	finished = coder->compiles_done >= coder->cfg->number_of_compiles_required;
+	return (burnout || finished);
 }
 
 static void	do_compile_phase(t_coder *coder)
@@ -23,9 +29,9 @@ static void	do_compile_phase(t_coder *coder)
 	pthread_mutex_lock(&coder->compile_mutex);
 	coder->last_compile_start = get_timestamp_ms();
 	pthread_mutex_unlock(&coder->compile_mutex);
-	coder->compiles_done++;
 	log_state(coder->sim, coder->id, "is compiling");
 	msleep(coder->sim, coder->cfg->time_to_compile);
+	coder->compiles_done++;
 }
 
 static void	do_debug_phase(t_coder *coder)
