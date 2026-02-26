@@ -24,7 +24,7 @@ static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 	if (elapsed >= coder->cfg->time_to_burnout)
 	{
 		pthread_mutex_lock(&sim->pair_mutex);
-		sim->burnout_detected = 1;
+		sim->burnout = 1;
 		pthread_cond_broadcast(&sim->pair_cond);
 		pthread_mutex_unlock(&sim->pair_mutex);
 		log_burnout(sim, coder->id);
@@ -33,13 +33,23 @@ static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 	return (0);
 }
 
+int	burnout_detected(t_sim *sim)
+{
+	int	val;
+
+	pthread_mutex_lock(&sim->pair_mutex);
+	val = sim->burnout;
+	pthread_mutex_unlock(&sim->pair_mutex);
+	return (val);
+}
+
 void	*monitor_routine(void *data)
 {
 	t_sim	*sim;
 	int		i;
 
 	sim = (t_sim *)data;
-	while (!sim->burnout_detected)
+	while (!burnout_detected(sim))
 	{
 		usleep(1000);
 		i = -1;
@@ -54,7 +64,10 @@ int	create_monitor(t_sim *sim)
 {
 	if (pthread_create(&sim->monitor_thread, NULL, monitor_routine, sim) != 0)
 	{
-		sim->burnout_detected = 1;
+		pthread_mutex_lock(&sim->pair_mutex);
+		sim->burnout = 1;
+		pthread_cond_broadcast(&sim->pair_cond);
+		pthread_mutex_unlock(&sim->pair_mutex);
 		wait_coders(sim);
 		return (0);
 	}
@@ -63,6 +76,9 @@ int	create_monitor(t_sim *sim)
 
 void	wait_monitor(t_sim *sim)
 {
-	sim->burnout_detected = 1;
+	pthread_mutex_lock(&sim->pair_mutex);
+	sim->burnout = 1;
+	pthread_cond_broadcast(&sim->pair_cond);
+	pthread_mutex_unlock(&sim->pair_mutex);
 	pthread_join(sim->monitor_thread, NULL);
 }

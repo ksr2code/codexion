@@ -88,7 +88,7 @@ typedef struct s_sim
 	t_coder				*coders;
 	t_dongle			*dongles;
 	int					num_coders;
-	int					burnout_detected;
+	int					burnout;
 	pthread_t			monitor_thread;
 }	t_sim;
 
@@ -105,11 +105,11 @@ int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
 void	acquire_both_dongles(t_coder *coder);
 void	get_ordered(t_coder *coder, t_dongle **first, t_dongle **second);
-void	acquire_dongle(t_coder *coder, t_dongle *dongle);
 void	release_dongles(t_coder *coder);
 void	get_timeout_ts(struct timespec *ts, long timeout_ms);
 void	*monitor_routine(void *data);
 int		create_monitor(t_sim *sim);
+int		burnout_detected(t_sim *sim);
 void	wait_monitor(t_sim *sim);
 void	heap_insert(t_dongle *dongle, t_coder *coder);
 t_coder	*heap_remove(t_dongle *dongle);

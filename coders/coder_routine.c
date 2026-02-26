@@ -17,9 +17,7 @@ static int	should_stop(t_coder *coder)
 	int	burnout;
 	int	finished;
 
-	pthread_mutex_lock(&coder->sim->pair_mutex);
-	burnout = coder->sim->burnout_detected;
-	pthread_mutex_unlock(&coder->sim->pair_mutex);
+	burnout = burnout_detected(coder->sim);
 	finished = coder->compiles_done >= coder->cfg->number_of_compiles_required;
 	return (burnout || finished);
 }
@@ -54,17 +52,17 @@ void	*coder_routine(void *data)
 	while (!should_stop(coder))
 	{
 		acquire_both_dongles(coder);
-		if (coder->sim->burnout_detected)
+		if (burnout_detected(coder->sim))
 			break ;
 		do_compile_phase(coder);
-		if (coder->sim->burnout_detected)
+		if (burnout_detected(coder->sim))
 			break ;
 		release_dongles(coder);
 		do_debug_phase(coder);
-		if (coder->sim->burnout_detected)
+		if (burnout_detected(coder->sim))
 			break ;
 		do_refactor_phase(coder);
-		if (coder->sim->burnout_detected)
+		if (burnout_detected(coder->sim))
 			break ;
 	}
 	coder->alive = 0;

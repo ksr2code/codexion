@@ -25,20 +25,14 @@ void	msleep(t_sim *sim, long ms)
 {
 	long	start;
 	long	elapsed;
-	int		burnout;
 
 	start = get_timestamp_ms();
-	burnout = 0;
-	while (!burnout)
+	while (!burnout_detected(sim))
 	{
-		pthread_mutex_lock(&sim->pair_mutex);
-		burnout = sim->burnout_detected;
-		pthread_mutex_unlock(&sim->pair_mutex);
 		elapsed = get_timestamp_ms() - start;
 		if (elapsed >= ms)
 			break ;
-		if (!burnout)
-			usleep(1000);
+		usleep(1000);
 	}
 }
 

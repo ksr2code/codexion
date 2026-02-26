@@ -49,12 +49,12 @@ void	acquire_both_dongles(t_coder *coder)
 	get_ordered(coder, &first, &second);
 	add_to_queue(coder, first, second);
 	pthread_mutex_lock(&coder->sim->pair_mutex);
-	while (!coder->sim->burnout_detected)
+	while (!coder->sim->burnout)
 	{
 		if (dongle_available(first, coder) && dongle_available(second, coder))
 		{
 			get_dongles(first, second);
-			if (!coder->sim->burnout_detected)
+			if (!coder->sim->burnout)
 			{
 				log_state(coder->sim, coder->id, "has taken a dongle");
 				log_state(coder->sim, coder->id, "has taken a dongle");
