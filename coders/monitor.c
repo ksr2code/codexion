@@ -16,9 +16,12 @@ static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 {
 	long	elapsed;
 
-	if (!coder->alive)
-		return (0);
 	pthread_mutex_lock(&coder->compile_mutex);
+	if (!coder->alive)
+	{
+		pthread_mutex_unlock(&coder->compile_mutex);
+		return (0);
+	}
 	elapsed = get_timestamp_ms() - coder->last_compile_start;
 	pthread_mutex_unlock(&coder->compile_mutex);
 	if (elapsed >= coder->cfg->time_to_burnout)

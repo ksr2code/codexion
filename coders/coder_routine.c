@@ -65,6 +65,8 @@ void	*coder_routine(void *data)
 		if (burnout_detected(coder->sim))
 			break ;
 	}
+	pthread_mutex_lock(&coder->compile_mutex);
 	coder->alive = 0;
+	pthread_mutex_unlock(&coder->compile_mutex);
 	return (NULL);
 }
