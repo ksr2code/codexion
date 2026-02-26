@@ -47,7 +47,7 @@ void	*coder_routine(void *data)
 	coder = (t_coder *)data;
 	while (!should_stop(coder))
 	{
-		acquire_lower_first(coder);
+		acquire_both_dongles(coder);
 		if (coder->sim->burnout_detected)
 			break ;
 		do_compile_phase(coder);

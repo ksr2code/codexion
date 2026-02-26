@@ -18,26 +18,55 @@ static int	dongle_available(t_dongle *dongle, t_coder *coder)
 		&& dongle->queue.size > 0 && dongle->queue.requests[0].coder == coder);
 }
 
-void	acquire_dongle(t_coder *coder, t_dongle *dongle)
+static void	add_to_queue(t_coder *coder, t_dongle *first, t_dongle *second)
 {
+	pthread_mutex_lock(&first->mutex);
+	heap_insert(first, coder);
+	pthread_mutex_unlock(&first->mutex);
+	pthread_mutex_lock(&second->mutex);
+	heap_insert(second, coder);
+	pthread_mutex_unlock(&second->mutex);
+}
+
+static void	get_dongles(t_coder *coder, t_dongle *first, t_dongle *second)
+{
+	pthread_mutex_lock(&first->mutex);
+	heap_remove(first);
+	first->available = 0;
+	pthread_mutex_unlock(&first->mutex);
+	pthread_mutex_lock(&second->mutex);
+	heap_remove(second);
+	second->available = 0;
+	pthread_mutex_unlock(&second->mutex);
+	pthread_mutex_unlock(&coder->sim->pair_mutex);
+	if (!coder->sim->burnout_detected)
+	{
+		log_state(coder->sim, coder->id, "has taken a dongle");
+		log_state(coder->sim, coder->id, "has taken a dongle");
+	}
+}
+
+void	acquire_both_dongles(t_coder *coder)
+{
+	t_dongle		*first;
+	t_dongle		*second;
 	struct timespec	ts;
 
-	pthread_mutex_lock(&dongle->mutex);
-	heap_insert(dongle, coder);
+	get_ordered(coder, &first, &second);
+	add_to_queue(coder, first, second);
+	pthread_mutex_lock(&coder->sim->pair_mutex);
 	while (!coder->sim->burnout_detected)
 	{
-		if (dongle_available(dongle, coder))
+		if (dongle_available(first, coder) && dongle_available(second, coder))
 		{
-			heap_remove(dongle);
-			dongle->available = 0;
-			break ;
+			get_dongles(coder, first, second);
+			return ;
 		}
 		get_timeout_ts(&ts, 10);
-		pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &ts);
+		pthread_cond_timedwait(&coder->sim->pair_cond, &coder->sim->pair_mutex,
+			&ts);
 	}
-	pthread_mutex_unlock(&dongle->mutex);
-	if (!coder->sim->burnout_detected)
-		log_state(coder->sim, coder->id, "has taken a dongle");
+	pthread_mutex_unlock(&coder->sim->pair_mutex);
 }
 
 void	release_dongles(t_coder *coder)
@@ -48,11 +77,12 @@ void	release_dongles(t_coder *coder)
 	pthread_mutex_lock(&coder->left_dongle->mutex);
 	coder->left_dongle->available = 1;
 	coder->left_dongle->cooldown_until = now + coder->cfg->dongle_cooldown;
-	pthread_cond_broadcast(&coder->left_dongle->cond);
 	pthread_mutex_unlock(&coder->left_dongle->mutex);
 	pthread_mutex_lock(&coder->right_dongle->mutex);
 	coder->right_dongle->available = 1;
 	coder->right_dongle->cooldown_until = now + coder->cfg->dongle_cooldown;
-	pthread_cond_broadcast(&coder->right_dongle->cond);
 	pthread_mutex_unlock(&coder->right_dongle->mutex);
+	pthread_mutex_lock(&coder->sim->pair_mutex);
+	pthread_cond_broadcast(&coder->sim->pair_cond);
+	pthread_mutex_unlock(&coder->sim->pair_mutex);
 }

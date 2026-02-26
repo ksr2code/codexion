@@ -22,12 +22,10 @@ t_sim	*init_simulation(t_config *cfg)
 	memset(sim, 0, sizeof(t_sim));
 	sim->start_time = get_timestamp_ms();
 	sim->burnout_detected = 0;
-	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
-	{
-		free(sim);
-		return (NULL);
-	}
-	if (!init_resources(sim, cfg))
+	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0
+		|| pthread_mutex_init(&sim->pair_mutex, NULL) != 0
+		|| pthread_cond_init(&sim->pair_cond, NULL) != 0
+		|| !init_resources(sim, cfg))
 	{
 		destroy_simulation(sim);
 		return (NULL);

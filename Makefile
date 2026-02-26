@@ -4,7 +4,7 @@ SRC_DIR = coders
 SRC = $(SRC_DIR)/main.c \
        $(SRC_DIR)/clean.c \
        $(SRC_DIR)/coder.c \
-       $(SRC_DIR)/coder_utils.c \
+       $(SRC_DIR)/coder_routine.c \
        $(SRC_DIR)/dongle.c \
        $(SRC_DIR)/init.c \
        $(SRC_DIR)/logger.c \

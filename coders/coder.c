@@ -35,21 +35,16 @@ void	wait_coders(t_sim *sim)
 		pthread_join(sim->coders[i].thread, NULL);
 }
 
-void	acquire_lower_first(t_coder *coder)
+void	get_ordered(t_coder *coder, t_dongle **first, t_dongle **second)
 {
-	t_dongle	*first;
-	t_dongle	*second;
-
 	if (coder->left_dongle->id < coder->right_dongle->id)
 	{
-		first = coder->left_dongle;
-		second = coder->right_dongle;
+		*first = coder->left_dongle;
+		*second = coder->right_dongle;
 	}
 	else
 	{
-		first = coder->right_dongle;
-		second = coder->left_dongle;
+		*first = coder->right_dongle;
+		*second = coder->left_dongle;
 	}
-	acquire_dongle(coder, first);
-	acquire_dongle(coder, second);
 }

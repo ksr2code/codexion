@@ -83,6 +83,8 @@ typedef struct s_coder
 typedef struct s_sim
 {
 	pthread_mutex_t		log_mutex;
+	pthread_mutex_t		pair_mutex;
+	pthread_cond_t		pair_cond;
 	long				start_time;
 	t_coder				*coders;
 	t_dongle			*dongles;
@@ -102,7 +104,8 @@ int		init_resources(t_sim *sim, t_config *cfg);
 void	*coder_routine(void *data);
 int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
-void	acquire_lower_first(t_coder *coder);
+void	acquire_both_dongles(t_coder *coder);
+void	get_ordered(t_coder *coder, t_dongle **first, t_dongle **second);
 void	acquire_dongle(t_coder *coder, t_dongle *dongle);
 void	release_dongles(t_coder *coder);
 void	get_timeout_ts(struct timespec *ts, long timeout_ms);
