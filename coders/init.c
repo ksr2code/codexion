@@ -12,6 +12,26 @@
 
 #include "codexion.h"
 
+static int	init_sim_mutex_cond(t_sim *sim)
+{
+	sim->is_init = 0;
+	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
+		return (0);
+	if (pthread_mutex_init(&sim->pair_mutex, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->log_mutex);
+		return (0);
+	}
+	if (pthread_cond_init(&sim->pair_cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->log_mutex);
+		pthread_mutex_destroy(&sim->pair_mutex);
+		return (0);
+	}
+	sim->is_init = 1;
+	return (1);
+}
+
 t_sim	*init_simulation(t_config *cfg)
 {
 	t_sim	*sim;
@@ -22,10 +42,7 @@ t_sim	*init_simulation(t_config *cfg)
 	memset(sim, 0, sizeof(t_sim));
 	sim->start_time = get_timestamp_ms();
 	sim->burnout = 0;
-	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0
-		|| pthread_mutex_init(&sim->pair_mutex, NULL) != 0
-		|| pthread_cond_init(&sim->pair_cond, NULL) != 0 || !init_resources(sim,
-			cfg))
+	if (!init_sim_mutex_cond(sim) || !init_resources(sim, cfg))
 	{
 		destroy_simulation(sim);
 		return (NULL);
@@ -53,7 +70,8 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].queue.size = 0;
 		sim->dongles[i].scheduler = cfg->scheduler;
 		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
-			return (0);
+			return (sim->dongles[i].is_init = 0, 0);
+		sim->dongles->is_init = 1;
 	}
 	return (1);
 }
@@ -79,7 +97,8 @@ static int	init_coders(t_sim *sim, t_config *cfg)
 		sim->coders[i].last_compile_start = sim->start_time;
 		sim->coders[i].alive = 1;
 		if (pthread_mutex_init(&sim->coders[i].compile_mutex, NULL) != 0)
-			return (0);
+			return (sim->coders[i].is_init = 0, 0);
+		sim->coders[i].is_init = 1;
 	}
 	return (1);
 }

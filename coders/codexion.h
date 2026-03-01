@@ -63,6 +63,7 @@ typedef struct s_dongle
 	int					available;
 	t_queue				queue;
 	t_scheduler			scheduler;
+	int					is_init;
 }	t_dongle;
 
 typedef struct s_coder
@@ -77,6 +78,7 @@ typedef struct s_coder
 	t_config		*cfg;
 	t_sim			*sim;
 	pthread_mutex_t	compile_mutex;
+	int				is_init;
 }	t_coder;
 
 typedef struct s_sim
@@ -84,6 +86,7 @@ typedef struct s_sim
 	pthread_mutex_t		log_mutex;
 	pthread_mutex_t		pair_mutex;
 	pthread_cond_t		pair_cond;
+	int					is_init;
 	long				start_time;
 	t_coder				*coders;
 	t_dongle			*dongles;
