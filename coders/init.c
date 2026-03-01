@@ -28,6 +28,13 @@ static int	init_sim_mutex_cond(t_sim *sim)
 		pthread_mutex_destroy(&sim->pair_mutex);
 		return (0);
 	}
+	if (pthread_cond_init(&sim->burnout_cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->log_mutex);
+		pthread_mutex_destroy(&sim->pair_mutex);
+		pthread_cond_destroy(&sim->pair_cond);
+		return (0);
+	}
 	sim->is_init = 1;
 	return (1);
 }

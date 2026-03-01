@@ -86,6 +86,7 @@ typedef struct s_sim
 	pthread_mutex_t		log_mutex;
 	pthread_mutex_t		pair_mutex;
 	pthread_cond_t		pair_cond;
+	pthread_cond_t		burnout_cond;
 	int					is_init;
 	long				start_time;
 	t_coder				*coders;
