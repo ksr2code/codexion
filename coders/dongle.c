@@ -89,6 +89,7 @@ void	release_dongles(t_coder *coder)
 
 	now = get_timestamp_ms();
 	get_ordered(coder, &first, &second);
+	pthread_mutex_lock(&coder->sim->pair_mutex);
 	pthread_mutex_lock(&first->mutex);
 	pthread_mutex_lock(&second->mutex);
 	first->available = 1;
@@ -97,7 +98,6 @@ void	release_dongles(t_coder *coder)
 	second->cooldown_until = now + coder->cfg->dongle_cooldown;
 	pthread_mutex_unlock(&second->mutex);
 	pthread_mutex_unlock(&first->mutex);
-	pthread_mutex_lock(&coder->sim->pair_mutex);
 	pthread_cond_broadcast(&coder->sim->pair_cond);
 	pthread_mutex_unlock(&coder->sim->pair_mutex);
 }
