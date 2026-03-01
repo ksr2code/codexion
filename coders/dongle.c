@@ -14,8 +14,14 @@
 
 static int	dongle_available(t_dongle *dongle, t_coder *coder)
 {
-	return (dongle->available && get_timestamp_ms() >= dongle->cooldown_until
-		&& dongle->queue.size > 0 && dongle->queue.requests[0].coder == coder);
+	int	result;
+
+	pthread_mutex_lock(&dongle->mutex);
+	result = (dongle->available && get_timestamp_ms() >= dongle->cooldown_until
+			&& dongle->queue.size > 0
+			&& dongle->queue.requests[0].coder == coder);
+	pthread_mutex_unlock(&dongle->mutex);
+	return (result);
 }
 
 static void	add_to_queue(t_coder *coder, t_dongle *first, t_dongle *second)
