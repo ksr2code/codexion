@@ -71,7 +71,7 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].scheduler = cfg->scheduler;
 		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
 			return (sim->dongles[i].is_init = 0, 0);
-		sim->dongles->is_init = 1;
+		sim->dongles[i].is_init = 1;
 	}
 	return (1);
 }
