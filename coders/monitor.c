@@ -28,7 +28,6 @@ static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 	{
 		pthread_mutex_lock(&sim->pair_mutex);
 		sim->burnout = 1;
-		pthread_cond_broadcast(&sim->pair_cond);
 		pthread_mutex_unlock(&sim->pair_mutex);
 		log_burnout(sim, coder->id);
 		return (1);
@@ -69,7 +68,6 @@ int	create_monitor(t_sim *sim)
 	{
 		pthread_mutex_lock(&sim->pair_mutex);
 		sim->burnout = 1;
-		pthread_cond_broadcast(&sim->pair_cond);
 		pthread_mutex_unlock(&sim->pair_mutex);
 		wait_coders(sim);
 		return (0);
@@ -81,7 +79,6 @@ void	wait_monitor(t_sim *sim)
 {
 	pthread_mutex_lock(&sim->pair_mutex);
 	sim->burnout = 1;
-	pthread_cond_broadcast(&sim->pair_cond);
 	pthread_mutex_unlock(&sim->pair_mutex);
 	pthread_join(sim->monitor_thread, NULL);
 }

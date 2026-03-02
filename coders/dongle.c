@@ -48,9 +48,8 @@ static void	get_dongles(t_dongle *first, t_dongle *second)
 
 void	acquire_both_dongles(t_coder *coder)
 {
-	t_dongle		*first;
-	t_dongle		*second;
-	struct timespec	ts;
+	t_dongle	*first;
+	t_dongle	*second;
 
 	get_ordered(coder, &first, &second);
 	pthread_mutex_lock(&coder->sim->pair_mutex);
@@ -68,9 +67,9 @@ void	acquire_both_dongles(t_coder *coder)
 			pthread_mutex_unlock(&coder->sim->pair_mutex);
 			return ;
 		}
-		get_timeout_ts(&ts, 10);
-		pthread_cond_timedwait(&coder->sim->pair_cond, &coder->sim->pair_mutex,
-			&ts);
+		pthread_mutex_unlock(&coder->sim->pair_mutex);
+		usleep(1000);
+		pthread_mutex_lock(&coder->sim->pair_mutex);
 	}
 	pthread_mutex_unlock(&coder->sim->pair_mutex);
 }
@@ -83,15 +82,12 @@ void	release_dongles(t_coder *coder)
 
 	now = get_timestamp_ms();
 	get_ordered(coder, &first, &second);
-	pthread_mutex_lock(&coder->sim->pair_mutex);
 	pthread_mutex_lock(&first->mutex);
-	pthread_mutex_lock(&second->mutex);
 	first->available = 1;
 	first->cooldown_until = now + coder->cfg->dongle_cooldown;
+	pthread_mutex_unlock(&first->mutex);
+	pthread_mutex_lock(&second->mutex);
 	second->available = 1;
 	second->cooldown_until = now + coder->cfg->dongle_cooldown;
 	pthread_mutex_unlock(&second->mutex);
-	pthread_mutex_unlock(&first->mutex);
-	pthread_cond_broadcast(&coder->sim->pair_cond);
-	pthread_mutex_unlock(&coder->sim->pair_mutex);
 }
