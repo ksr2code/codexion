@@ -77,18 +77,21 @@ void	acquire_both_dongles(t_coder *coder)
 
 void	release_dongles(t_coder *coder)
 {
-	long	now;
+	t_dongle	*first;
+	t_dongle	*second;
+	long		now;
 
 	now = get_timestamp_ms();
-	pthread_mutex_lock(&coder->left_dongle->mutex);
-	coder->left_dongle->available = 1;
-	coder->left_dongle->cooldown_until = now + coder->cfg->dongle_cooldown;
-	pthread_mutex_unlock(&coder->left_dongle->mutex);
-	pthread_mutex_lock(&coder->right_dongle->mutex);
-	coder->right_dongle->available = 1;
-	coder->right_dongle->cooldown_until = now + coder->cfg->dongle_cooldown;
-	pthread_mutex_unlock(&coder->right_dongle->mutex);
+	get_ordered(coder, &first, &second);
 	pthread_mutex_lock(&coder->sim->pair_mutex);
+	pthread_mutex_lock(&first->mutex);
+	pthread_mutex_lock(&second->mutex);
+	first->available = 1;
+	first->cooldown_until = now + coder->cfg->dongle_cooldown;
+	second->available = 1;
+	second->cooldown_until = now + coder->cfg->dongle_cooldown;
+	pthread_mutex_unlock(&second->mutex);
+	pthread_mutex_unlock(&first->mutex);
 	pthread_cond_broadcast(&coder->sim->pair_cond);
 	pthread_mutex_unlock(&coder->sim->pair_mutex);
 }
