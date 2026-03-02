@@ -12,44 +12,6 @@
 
 #include "codexion.h"
 
-static int	init_sim_mutex_cond(t_sim *sim)
-{
-	sim->is_init = 0;
-	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
-		return (0);
-	if (pthread_mutex_init(&sim->pair_mutex, NULL) != 0)
-	{
-		pthread_mutex_destroy(&sim->log_mutex);
-		return (0);
-	}
-	if (pthread_cond_init(&sim->pair_cond, NULL) != 0)
-	{
-		pthread_mutex_destroy(&sim->log_mutex);
-		pthread_mutex_destroy(&sim->pair_mutex);
-		return (0);
-	}
-	sim->is_init = 1;
-	return (1);
-}
-
-t_sim	*init_simulation(t_config *cfg)
-{
-	t_sim	*sim;
-
-	sim = malloc(sizeof(t_sim));
-	if (!sim)
-		return (NULL);
-	memset(sim, 0, sizeof(t_sim));
-	sim->start_time = get_timestamp_ms();
-	sim->burnout = 0;
-	if (!init_sim_mutex_cond(sim) || !init_resources(sim, cfg))
-	{
-		destroy_simulation(sim);
-		return (NULL);
-	}
-	return (sim);
-}
-
 static int	init_dongles(t_sim *sim, t_config *cfg)
 {
 	int	i;
@@ -103,10 +65,42 @@ static int	init_coders(t_sim *sim, t_config *cfg)
 	return (1);
 }
 
-int	init_resources(t_sim *sim, t_config *cfg)
+static int	init_resources(t_sim *sim, t_config *cfg)
 {
 	sim->num_coders = cfg->number_of_coders;
 	if (!init_dongles(sim, cfg) || !init_coders(sim, cfg))
 		return (0);
 	return (1);
+}
+
+static int	init_sim_mutex_cond(t_sim *sim)
+{
+	sim->is_init = 0;
+	if (pthread_mutex_init(&sim->log_mutex, NULL) != 0)
+		return (0);
+	if (pthread_mutex_init(&sim->pair_mutex, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->log_mutex);
+		return (0);
+	}
+	sim->is_init = 1;
+	return (1);
+}
+
+t_sim	*init_simulation(t_config *cfg)
+{
+	t_sim	*sim;
+
+	sim = malloc(sizeof(t_sim));
+	if (!sim)
+		return (NULL);
+	memset(sim, 0, sizeof(t_sim));
+	sim->start_time = get_timestamp_ms();
+	sim->burnout = 0;
+	if (!init_sim_mutex_cond(sim) || !init_resources(sim, cfg))
+	{
+		destroy_simulation(sim);
+		return (NULL);
+	}
+	return (sim);
 }

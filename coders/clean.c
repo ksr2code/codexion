@@ -47,7 +47,6 @@ void	destroy_simulation(t_sim *sim)
 	{
 		pthread_mutex_destroy(&sim->log_mutex);
 		pthread_mutex_destroy(&sim->pair_mutex);
-		pthread_cond_destroy(&sim->pair_cond);
 	}
 	free(sim);
 }

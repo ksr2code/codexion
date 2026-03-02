@@ -102,7 +102,6 @@ void	log_state(t_sim *sim, int coder_id, const char *action);
 void	log_burnout(t_sim *sim, int coder_id);
 t_sim	*init_simulation(t_config *cfg);
 void	destroy_simulation(t_sim *sim);
-int		init_resources(t_sim *sim, t_config *cfg);
 void	*coder_routine(void *data);
 int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
