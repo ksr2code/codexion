@@ -59,6 +59,7 @@ typedef struct s_dongle
 {
 	int					id;
 	pthread_mutex_t		mutex;
+	pthread_cond_t		cond;
 	long				cooldown_until;
 	int					available;
 	t_queue				queue;
@@ -85,7 +86,6 @@ typedef struct s_sim
 {
 	pthread_mutex_t		log_mutex;
 	pthread_mutex_t		pair_mutex;
-	pthread_cond_t		pair_cond;
 	int					is_init;
 	long				start_time;
 	t_coder				*coders;

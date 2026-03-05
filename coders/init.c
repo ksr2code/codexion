@@ -22,12 +22,6 @@ static int	init_sim_mutex_cond(t_sim *sim)
 		pthread_mutex_destroy(&sim->log_mutex);
 		return (0);
 	}
-	if (pthread_cond_init(&sim->pair_cond, NULL) != 0)
-	{
-		pthread_mutex_destroy(&sim->log_mutex);
-		pthread_mutex_destroy(&sim->pair_mutex);
-		return (0);
-	}
 	sim->is_init = 1;
 	return (1);
 }
@@ -71,6 +65,11 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].scheduler = cfg->scheduler;
 		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
 			return (sim->dongles[i].is_init = 0, 0);
+		if (pthread_cond_init(&sim->dongles[i].cond, NULL) != 0)
+		{
+			pthread_mutex_destroy(&sim->dongles[i].mutex);
+			return (sim->dongles[i].is_init = 0, 0);
+		}
 		sim->dongles[i].is_init = 1;
 	}
 	return (1);

@@ -12,6 +12,19 @@
 
 #include "codexion.h"
 
+static void	wake_all_dongles(t_sim *sim)
+{
+	int	i;
+
+	i = -1;
+	while (++i < sim->num_coders)
+	{
+		pthread_mutex_lock(&sim->dongles[i].mutex);
+		pthread_cond_broadcast(&sim->dongles[i].cond);
+		pthread_mutex_unlock(&sim->dongles[i].mutex);
+	}
+}
+
 static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 {
 	long	elapsed;
@@ -28,8 +41,8 @@ static int	check_coder_burnout(t_sim *sim, t_coder *coder)
 	{
 		pthread_mutex_lock(&sim->pair_mutex);
 		sim->burnout = 1;
-		pthread_cond_broadcast(&sim->pair_cond);
 		pthread_mutex_unlock(&sim->pair_mutex);
+		wake_all_dongles(sim);
 		log_burnout(sim, coder->id);
 		return (1);
 	}
@@ -69,8 +82,8 @@ int	create_monitor(t_sim *sim)
 	{
 		pthread_mutex_lock(&sim->pair_mutex);
 		sim->burnout = 1;
-		pthread_cond_broadcast(&sim->pair_cond);
 		pthread_mutex_unlock(&sim->pair_mutex);
+		wake_all_dongles(sim);
 		wait_coders(sim);
 		return (0);
 	}
@@ -81,7 +94,7 @@ void	wait_monitor(t_sim *sim)
 {
 	pthread_mutex_lock(&sim->pair_mutex);
 	sim->burnout = 1;
-	pthread_cond_broadcast(&sim->pair_cond);
 	pthread_mutex_unlock(&sim->pair_mutex);
+	wake_all_dongles(sim);
 	pthread_join(sim->monitor_thread, NULL);
 }
