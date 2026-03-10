@@ -6,7 +6,7 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 11:07:01 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 11:37:28 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/03/10 02:06:41 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,11 @@ int	parse_args(int ac, char **av, t_config *cfg)
 		return (0);
 	}
 	cfg->number_of_coders = atoi(av[1]);
+	if (cfg->number_of_coders < 1)
+	{
+		fprintf(stderr, "Wrong number_of_coders!\n");
+		return (0);
+	}
 	cfg->time_to_burnout = atoi(av[2]);
 	cfg->time_to_compile = atoi(av[3]);
 	cfg->time_to_debug = atoi(av[4]);
