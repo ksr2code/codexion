@@ -28,63 +28,62 @@ typedef enum e_scheduler
 {
 	FIFO,
 	EDF
-}	t_scheduler;
+}						t_scheduler;
 
 typedef struct s_config
 {
-	int				number_of_coders;
-	int				time_to_burnout;
-	int				time_to_compile;
-	int				time_to_debug;
-	int				time_to_refactor;
-	int				number_of_compiles_required;
-	int				dongle_cooldown;
-	t_scheduler		scheduler;
-}	t_config;
+	int					number_of_coders;
+	int					time_to_burnout;
+	int					time_to_compile;
+	int					time_to_debug;
+	int					time_to_refactor;
+	int					number_of_compiles_required;
+	int					dongle_cooldown;
+	t_scheduler			scheduler;
+}						t_config;
 
 typedef struct s_request
 {
-	t_coder		*coder;
-	long		arrival_time;
-	long		deadline;
-}				t_request;
+	t_coder				*coder;
+	long				arrival_time;
+	long				deadline;
+}						t_request;
 
 typedef struct s_queue
 {
-	t_request	*requests;
-	int			size;
-}	t_queue;
+	t_request			*requests;
+	int					size;
+	long				fifo_counter;
+}						t_queue;
 
 typedef struct s_dongle
 {
 	int					id;
-	pthread_mutex_t		mutex;
 	long				cooldown_until;
 	int					available;
-	t_queue				queue;
-	t_scheduler			scheduler;
 	int					is_init;
-}	t_dongle;
+}						t_dongle;
 
 typedef struct s_coder
 {
-	int				id;
-	pthread_t		thread;
-	t_dongle		*left_dongle;
-	t_dongle		*right_dongle;
-	long			last_compile_start;
-	int				compiles_done;
-	int				alive;
-	t_config		*cfg;
-	t_sim			*sim;
-	pthread_mutex_t	compile_mutex;
-	int				is_init;
-}	t_coder;
+	int					id;
+	pthread_t			thread;
+	t_dongle			*left_dongle;
+	t_dongle			*right_dongle;
+	long				last_compile_start;
+	int					compiles_done;
+	int					alive;
+	t_config			*cfg;
+	t_sim				*sim;
+	pthread_mutex_t		compile_mutex;
+	int					is_init;
+}						t_coder;
 
 typedef struct s_sim
 {
 	pthread_mutex_t		log_mutex;
 	pthread_mutex_t		pair_mutex;
+	pthread_cond_t		pair_cond;
 	int					is_init;
 	long				start_time;
 	t_coder				*coders;
@@ -92,7 +91,9 @@ typedef struct s_sim
 	int					num_coders;
 	int					burnout;
 	pthread_t			monitor_thread;
-}	t_sim;
+	t_queue				queue;
+	t_scheduler			scheduler;
+}						t_sim;
 
 int		parse_args(int ac, char **av, t_config *cfg);
 long	get_timestamp_ms(void);
@@ -105,14 +106,13 @@ void	*coder_routine(void *data);
 int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
 void	acquire_both_dongles(t_coder *coder);
-void	get_ordered(t_coder *coder, t_dongle **first, t_dongle **second);
 void	release_dongles(t_coder *coder);
 void	get_timeout_ts(struct timespec *ts, long timeout_ms);
 void	*monitor_routine(void *data);
 int		create_monitor(t_sim *sim);
 int		burnout_detected(t_sim *sim);
 void	wait_monitor(t_sim *sim);
-void	heap_insert(t_dongle *dongle, t_coder *coder);
-t_coder	*heap_remove(t_dongle *dongle);
+void	heap_insert(t_queue *q, t_coder *coder, t_scheduler sched);
+t_coder	*heap_remove(t_queue *q);
 
 #endif

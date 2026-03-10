@@ -26,13 +26,6 @@ static int	init_dongles(t_sim *sim, t_config *cfg)
 		sim->dongles[i].id = i;
 		sim->dongles[i].available = 1;
 		sim->dongles[i].cooldown_until = 0;
-		sim->dongles[i].queue.requests = malloc(2 * sizeof(t_request));
-		if (!sim->dongles[i].queue.requests)
-			return (0);
-		sim->dongles[i].queue.size = 0;
-		sim->dongles[i].scheduler = cfg->scheduler;
-		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
-			return (sim->dongles[i].is_init = 0, 0);
 		sim->dongles[i].is_init = 1;
 	}
 	return (1);
@@ -65,11 +58,14 @@ static int	init_coders(t_sim *sim, t_config *cfg)
 	return (1);
 }
 
-static int	init_resources(t_sim *sim, t_config *cfg)
+static int	init_global_queue(t_sim *sim, t_config *cfg)
 {
-	sim->num_coders = cfg->number_of_coders;
-	if (!init_dongles(sim, cfg) || !init_coders(sim, cfg))
+	sim->queue.requests = malloc(cfg->number_of_coders * sizeof(t_request));
+	if (!sim->queue.requests)
 		return (0);
+	sim->queue.size = 0;
+	sim->queue.fifo_counter = 0;
+	sim->scheduler = cfg->scheduler;
 	return (1);
 }
 
@@ -81,6 +77,12 @@ static int	init_sim_mutex_cond(t_sim *sim)
 	if (pthread_mutex_init(&sim->pair_mutex, NULL) != 0)
 	{
 		pthread_mutex_destroy(&sim->log_mutex);
+		return (0);
+	}
+	if (pthread_cond_init(&sim->pair_cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->log_mutex);
+		pthread_mutex_destroy(&sim->pair_mutex);
 		return (0);
 	}
 	sim->is_init = 1;
@@ -95,9 +97,11 @@ t_sim	*init_simulation(t_config *cfg)
 	if (!sim)
 		return (NULL);
 	memset(sim, 0, sizeof(t_sim));
+	sim->num_coders = cfg->number_of_coders;
 	sim->start_time = get_timestamp_ms();
 	sim->burnout = 0;
-	if (!init_sim_mutex_cond(sim) || !init_resources(sim, cfg))
+	if (!init_sim_mutex_cond(sim) || !init_dongles(sim, cfg)
+		|| !init_coders(sim, cfg) || !init_global_queue(sim, cfg))
 	{
 		destroy_simulation(sim);
 		return (NULL);

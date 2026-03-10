@@ -46,12 +46,12 @@ static void	shift_down(t_queue *q, int i)
 		left = (2 * i) + 1;
 		right = (2 * i) + 2;
 		smallest = i;
-		if (left < q->size)
-			if (q->requests[left].deadline < q->requests[smallest].deadline)
-				smallest = left;
-		if (right < q->size)
-			if (q->requests[right].deadline < q->requests[smallest].deadline)
-				smallest = right;
+		if (left < q->size
+			&& q->requests[left].deadline < q->requests[smallest].deadline)
+			smallest = left;
+		if (right < q->size
+			&& q->requests[right].deadline < q->requests[smallest].deadline)
+			smallest = right;
 		if (smallest == i)
 			break ;
 		swap_requests(&q->requests[i], &q->requests[smallest]);
@@ -59,35 +59,35 @@ static void	shift_down(t_queue *q, int i)
 	}
 }
 
-void	heap_insert(t_dongle *dongle, t_coder *coder)
+void	heap_insert(t_queue *q, t_coder *coder, t_scheduler scheduler)
 {
 	t_request	req;
 	int			i;
 
 	req.coder = coder;
 	req.arrival_time = get_timestamp_ms();
-	if (dongle->scheduler == EDF)
+	if (scheduler == EDF)
 		req.deadline = coder->last_compile_start + coder->cfg->time_to_burnout;
 	else
-		req.deadline = req.arrival_time;
-	i = dongle->queue.size;
-	dongle->queue.requests[i] = req;
-	dongle->queue.size++;
-	shift_up(&dongle->queue, i);
+		req.deadline = q->fifo_counter++;
+	i = q->size;
+	q->requests[i] = req;
+	q->size++;
+	shift_up(q, i);
 }
 
-t_coder	*heap_remove(t_dongle *dongle)
+t_coder	*heap_remove(t_queue *q)
 {
 	t_coder	*winner;
 
-	if (dongle->queue.size == 0)
+	if (q->size == 0)
 		return (NULL);
-	winner = dongle->queue.requests[0].coder;
-	dongle->queue.size--;
-	if (dongle->queue.size > 0)
+	winner = q->requests[0].coder;
+	q->size--;
+	if (q->size > 0)
 	{
-		dongle->queue.requests[0] = dongle->queue.requests[dongle->queue.size];
-		shift_down(&dongle->queue, 0);
+		q->requests[0] = q->requests[q->size];
+		shift_down(q, 0);
 	}
 	return (winner);
 }

@@ -12,82 +12,60 @@
 
 #include "codexion.h"
 
-static int	dongle_available(t_dongle *dongle, t_coder *coder)
+static int	coder_can_compile(t_coder *coder)
 {
-	int	result;
+	t_sim	*sim;
+	long	now;
 
-	pthread_mutex_lock(&dongle->mutex);
-	result = (dongle->available && get_timestamp_ms() >= dongle->cooldown_until
-			&& dongle->queue.size > 0
-			&& dongle->queue.requests[0].coder == coder);
-	pthread_mutex_unlock(&dongle->mutex);
-	return (result);
-}
-
-static void	add_to_queue(t_coder *coder, t_dongle *first, t_dongle *second)
-{
-	pthread_mutex_lock(&first->mutex);
-	heap_insert(first, coder);
-	pthread_mutex_unlock(&first->mutex);
-	pthread_mutex_lock(&second->mutex);
-	heap_insert(second, coder);
-	pthread_mutex_unlock(&second->mutex);
-}
-
-static void	get_dongles(t_dongle *first, t_dongle *second)
-{
-	pthread_mutex_lock(&first->mutex);
-	heap_remove(first);
-	first->available = 0;
-	pthread_mutex_unlock(&first->mutex);
-	pthread_mutex_lock(&second->mutex);
-	heap_remove(second);
-	second->available = 0;
-	pthread_mutex_unlock(&second->mutex);
+	sim = coder->sim;
+	if (sim->queue.size == 0 || sim->queue.requests[0].coder != coder)
+		return (0);
+	now = get_timestamp_ms();
+	return (coder->left_dongle->available
+		&& now >= coder->left_dongle->cooldown_until
+		&& coder->right_dongle->available
+		&& now >= coder->right_dongle->cooldown_until);
 }
 
 void	acquire_both_dongles(t_coder *coder)
 {
-	t_dongle	*first;
-	t_dongle	*second;
+	t_sim	*sim;
 
-	get_ordered(coder, &first, &second);
-	pthread_mutex_lock(&coder->sim->pair_mutex);
-	add_to_queue(coder, first, second);
-	while (!coder->sim->burnout)
+	sim = coder->sim;
+	pthread_mutex_lock(&sim->pair_mutex);
+	heap_insert(&sim->queue, coder, sim->scheduler);
+	while (!sim->burnout)
 	{
-		if (dongle_available(first, coder) && dongle_available(second, coder))
+		if (coder_can_compile(coder))
 		{
-			get_dongles(first, second);
-			if (!coder->sim->burnout)
+			coder->left_dongle->available = 0;
+			coder->right_dongle->available = 0;
+			heap_remove(&sim->queue);
+			if (!sim->burnout)
 			{
-				log_state(coder->sim, coder->id, "has taken a dongle");
-				log_state(coder->sim, coder->id, "has taken a dongle");
+				log_state(sim, coder->id, "has taken a dongle");
+				log_state(sim, coder->id, "has taken a dongle");
 			}
-			pthread_mutex_unlock(&coder->sim->pair_mutex);
+			pthread_mutex_unlock(&sim->pair_mutex);
 			return ;
 		}
-		pthread_mutex_unlock(&coder->sim->pair_mutex);
-		usleep(1000);
-		pthread_mutex_lock(&coder->sim->pair_mutex);
+		pthread_cond_wait(&sim->pair_cond, &sim->pair_mutex);
 	}
-	pthread_mutex_unlock(&coder->sim->pair_mutex);
+	pthread_mutex_unlock(&sim->pair_mutex);
 }
 
 void	release_dongles(t_coder *coder)
 {
-	t_dongle	*first;
-	t_dongle	*second;
-	long		now;
+	t_sim	*sim;
+	long	now;
 
+	sim = coder->sim;
 	now = get_timestamp_ms();
-	get_ordered(coder, &first, &second);
-	pthread_mutex_lock(&first->mutex);
-	first->available = 1;
-	first->cooldown_until = now + coder->cfg->dongle_cooldown;
-	pthread_mutex_unlock(&first->mutex);
-	pthread_mutex_lock(&second->mutex);
-	second->available = 1;
-	second->cooldown_until = now + coder->cfg->dongle_cooldown;
-	pthread_mutex_unlock(&second->mutex);
+	pthread_mutex_lock(&sim->pair_mutex);
+	coder->left_dongle->available = 1;
+	coder->left_dongle->cooldown_until = now + coder->cfg->dongle_cooldown;
+	coder->right_dongle->available = 1;
+	coder->right_dongle->cooldown_until = now + coder->cfg->dongle_cooldown;
+	pthread_cond_broadcast(&sim->pair_cond);
+	pthread_mutex_unlock(&sim->pair_mutex);
 }

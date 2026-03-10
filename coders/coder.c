@@ -34,19 +34,3 @@ void	wait_coders(t_sim *sim)
 	while (++i < sim->num_coders)
 		pthread_join(sim->coders[i].thread, NULL);
 }
-
-void	get_ordered(t_coder *coder, t_dongle **first, t_dongle **second)
-{
-	if (coder->left_dongle->id < coder->right_dongle->id)
-	{
-		*first = coder->left_dongle;
-		*second = coder->right_dongle;
-	}
-	else
-	{
-		*first = coder->right_dongle;
-		*second = coder->left_dongle;
-	}
-	if (*first == *second)
-		msleep(coder->sim, coder->cfg->time_to_burnout + 1);
-}
