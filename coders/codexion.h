@@ -107,7 +107,6 @@ int		create_coders(t_sim *sim);
 void	wait_coders(t_sim *sim);
 void	acquire_both_dongles(t_coder *coder);
 void	release_dongles(t_coder *coder);
-void	get_timeout_ts(struct timespec *ts, long timeout_ms);
 void	*monitor_routine(void *data);
 int		create_monitor(t_sim *sim);
 int		burnout_detected(t_sim *sim);

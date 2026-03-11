@@ -18,6 +18,8 @@ static int	coder_can_compile(t_coder *coder)
 	long	now;
 
 	sim = coder->sim;
+	if (coder->left_dongle == coder->right_dongle)
+		return (0);
 	if (sim->queue.size == 0 || sim->queue.requests[0].coder != coder)
 		return (0);
 	now = get_timestamp_ms();
