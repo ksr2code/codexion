@@ -98,6 +98,7 @@ typedef struct s_sim
 int		parse_args(int ac, char **av, t_config *cfg);
 long	get_timestamp_ms(void);
 void	msleep(t_sim *sim, long ms);
+void	swap_requests(t_request *r1, t_request *r2);
 void	log_state(t_sim *sim, int coder_id, const char *action);
 void	log_burnout(t_sim *sim, int coder_id);
 t_sim	*init_simulation(t_config *cfg);

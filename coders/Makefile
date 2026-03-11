@@ -11,7 +11,7 @@ SRC = $(SRC_DIR)/main.c \
        $(SRC_DIR)/monitor.c \
        $(SRC_DIR)/parse.c \
        $(SRC_DIR)/scheduler.c \
-       $(SRC_DIR)/time_utils.c
+       $(SRC_DIR)/utils.c
 
 OBJ = $(SRC:.c=.o)
 

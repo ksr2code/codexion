@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   time_utils.c                                       :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 13:34:42 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/17 22:07:21 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/03/11 06:45:15 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,4 +34,13 @@ void	msleep(t_sim *sim, long ms)
 			break ;
 		usleep(1000);
 	}
+}
+
+void	swap_requests(t_request *r1, t_request *r2)
+{
+	t_request	tmp;
+
+	tmp = *r1;
+	*r1 = *r2;
+	*r2 = tmp;
 }

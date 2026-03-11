@@ -6,19 +6,15 @@
 /*   By: ksmailov <ksmailov@student.42heilbronn.de  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/22 13:32:39 by ksmailov          #+#    #+#             */
-/*   Updated: 2026/02/22 15:59:59 by ksmailov         ###   ########.fr       */
+/*   Updated: 2026/03/11 06:52:06 by ksmailov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void	swap_requests(t_request *r1, t_request *r2)
+static int	has_priority(t_request *a, t_request *b)
 {
-	t_request	tmp;
-
-	tmp = *r1;
-	*r1 = *r2;
-	*r2 = tmp;
+	return (a->deadline < b->deadline);
 }
 
 static void	shift_up(t_queue *q, int i)
@@ -28,7 +24,7 @@ static void	shift_up(t_queue *q, int i)
 	while (i > 0)
 	{
 		parent = (i - 1) / 2;
-		if (q->requests[i].deadline >= q->requests[parent].deadline)
+		if (!has_priority(&q->requests[i], &q->requests[parent]))
 			break ;
 		swap_requests(&q->requests[i], &q->requests[parent]);
 		i = parent;
@@ -46,11 +42,11 @@ static void	shift_down(t_queue *q, int i)
 		left = (2 * i) + 1;
 		right = (2 * i) + 2;
 		smallest = i;
-		if (left < q->size
-			&& q->requests[left].deadline < q->requests[smallest].deadline)
+		if (left < q->size && has_priority(&q->requests[left],
+				&q->requests[smallest]))
 			smallest = left;
-		if (right < q->size
-			&& q->requests[right].deadline < q->requests[smallest].deadline)
+		if (right < q->size && has_priority(&q->requests[right],
+				&q->requests[smallest]))
 			smallest = right;
 		if (smallest == i)
 			break ;
